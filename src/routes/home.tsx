@@ -72,8 +72,8 @@ export default function Home() {
   const handleShare = useCallback(async () => {
     const syncUrl = getSyncUrl()
     const shareData = {
-      title: "Dia de Quem?",
-      text: `Sincronizar o app do Kai: ${isMamae ? "Dia da Mamãe" : "Dia do Papai"}`,
+      title: "Dia de Quem? - Sincronizar",
+      text: `Abra para sincronizar: ${isMamae ? "Dia da Mamãe" : "Dia do Papai"} 🔗`,
       url: syncUrl,
     }
 
@@ -130,7 +130,7 @@ export default function Home() {
             className="share-button"
             onClick={handleShare}
           >
-            📤 Compartilhar
+            🔗 Sincronizar
           </button>
         </div>
 
