@@ -221,16 +221,73 @@ body.papai-day {
 }
 
 .greeting {
-  font-size: 1.75rem;
+  font-size: 1.9rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  text-shadow: 0 8px 24px rgba(255, 255, 255, 0.35);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.7);
   animation: bounce 3s ease-in-out infinite;
+  text-transform: none;
+}
+
+.greeting-text,
+.greeting-punct {
+  font-weight: 700;
+  color: #1f2a33;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.greeting-name {
+  font-family: "Fraunces", "Manrope", sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 1.08em;
+  background: linear-gradient(120deg, var(--mamae-primary), var(--papai-primary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  text-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+}
+
+.greeting-name::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(120deg, rgba(255, 107, 157, 0.35), rgba(78, 205, 196, 0.35));
+  z-index: -1;
+}
+
+.greeting-emoji {
+  display: inline-block;
+  transform-origin: 70% 70%;
+  animation: wave 2.5s ease-in-out infinite;
 }
 
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-6px); }
+}
+
+@keyframes wave {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(12deg); }
+  40% { transform: rotate(-8deg); }
+  60% { transform: rotate(10deg); }
 }
 
 .day-card {
@@ -282,23 +339,35 @@ body.papai-day {
   font-family: "Fraunces", "Manrope", sans-serif;
   font-size: 2.5rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #ff6b9d, #4ecdc4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
   letter-spacing: -0.02em;
+  text-transform: uppercase;
 }
 
-.bg-mamae .title {
-  background: linear-gradient(135deg, var(--mamae-primary), var(--mamae-accent));
-  -webkit-background-clip: text;
-  background-clip: text;
+.title-prefix {
+  font-weight: 600;
+  color: rgba(31, 42, 51, 0.75);
+  letter-spacing: 0.02em;
 }
 
-.bg-papai .title {
-  background: linear-gradient(135deg, var(--papai-primary), var(--papai-accent));
-  -webkit-background-clip: text;
-  background-clip: text;
+.title-highlight {
+  position: relative;
+  display: inline-block;
+  padding: 2px 10px 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+}
+
+.bg-mamae .title-highlight {
+  color: var(--mamae-accent);
+  background: linear-gradient(135deg, rgba(255, 107, 157, 0.2), rgba(255, 195, 210, 0.5));
+  border: 1px solid rgba(255, 107, 157, 0.35);
+}
+
+.bg-papai .title-highlight {
+  color: var(--papai-accent);
+  background: linear-gradient(135deg, rgba(78, 205, 196, 0.2), rgba(168, 230, 207, 0.6));
+  border: 1px solid rgba(78, 205, 196, 0.35);
 }
 
 .payback-badge {
@@ -464,7 +533,8 @@ body.papai-day {
 /* Mobile optimizations */
 @media (max-width: 480px) {
   .greeting {
-    font-size: 1.45rem;
+    font-size: 1.5rem;
+    padding: 8px 14px;
   }
 
   .day-card {

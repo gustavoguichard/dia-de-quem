@@ -45,7 +45,8 @@ export default function Home() {
 
 	const isMamae = parent === "mamae";
 	const emoji = isMamae ? "🌺" : "🌴";
-	const title = isMamae ? "Dia da Mamãe" : "Dia do Papai";
+	const titlePrefix = isMamae ? "Dia da" : "Dia do";
+	const titleName = isMamae ? "Mamãe" : "Papai";
 	const bgClass = isMamae ? "bg-mamae" : "bg-papai";
 
 	useEffect(() => {
@@ -88,11 +89,21 @@ export default function Home() {
 			</div>
 
 			<main className="content">
-				<h1 className="greeting">Oi, Kai! 👋</h1>
+        <h1 className="greeting">
+          <span className="greeting-text">Oi,</span>{" "}
+          <span className="greeting-name">Kai</span>
+          <span className="greeting-punct">!</span>{" "}
+          <span className="greeting-emoji" aria-hidden="true">
+            👋
+          </span>
+        </h1>
 
 				<div className="day-card">
 					<span className="emoji">{emoji}</span>
-					<h2 className="title">{title}</h2>
+					<h2 className="title">
+						<span className="title-prefix">{titlePrefix}</span>{" "}
+						<span className="title-highlight">{titleName}</span>
+					</h2>
 					{isPayback && <p className="payback-badge">🔄 Dia de troca!</p>}
 				</div>
 
