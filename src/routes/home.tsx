@@ -45,7 +45,7 @@ export default function Home() {
 
 	const isMamae = parent === "mamae";
 	const emoji = isMamae ? "🌺" : "🌴";
-	const titlePrefix = isMamae ? "Dia da" : "Dia do";
+	const titlePrefix = isMamae ? "Hoje é dia da" : "Hoje é dia do";
 	const titleName = isMamae ? "Mamãe" : "Papai";
 	const bgClass = isMamae ? "bg-mamae" : "bg-papai";
 
