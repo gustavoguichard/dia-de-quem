@@ -170,3 +170,29 @@ export function getDebtInfo(): { owedTo: Parent | null; amount: number } {
     amount: Math.abs(state.debt),
   }
 }
+
+export function exportState(): string {
+  const state = loadState()
+  return btoa(JSON.stringify(state))
+}
+
+export function importState(encoded: string): boolean {
+  try {
+    const decoded = JSON.parse(atob(encoded))
+    if (typeof decoded.debt === "number" && Array.isArray(decoded.switches)) {
+      saveState({
+        switches: decoded.switches,
+        debt: clampDebt(decoded.debt),
+      })
+      return true
+    }
+  } catch {
+    // Invalid state
+  }
+  return false
+}
+
+export function getSyncUrl(): string {
+  const state = exportState()
+  return `${window.location.origin}${window.location.pathname}?sync=${state}`
+}

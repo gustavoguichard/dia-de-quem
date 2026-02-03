@@ -1,17 +1,27 @@
-import { useEffect } from "react"
-import { useLoaderData, useFetcher } from "react-router"
+import { useEffect, useState, useCallback } from "react"
+import { useLoaderData, useFetcher, useSearchParams, useNavigate } from "react-router"
 import {
   getTodayParent,
   switchDay,
   isPaybackDay,
   getDebtInfo,
+  importState,
+  getSyncUrl,
 } from "../lib/day-logic"
 
-export async function loader() {
+export async function loader({ request }: { request: Request }) {
+  const url = new URL(request.url)
+  const syncParam = url.searchParams.get("sync")
+
+  if (syncParam) {
+    importState(syncParam)
+  }
+
   return {
     parent: getTodayParent(),
     isPayback: isPaybackDay(),
     debt: getDebtInfo(),
+    didSync: !!syncParam,
   }
 }
 
@@ -21,12 +31,17 @@ export async function action() {
     parent: getTodayParent(),
     isPayback: isPaybackDay(),
     debt: getDebtInfo(),
+    didSync: false,
   }
 }
 
 export default function Home() {
   const data = useLoaderData<typeof loader>()
   const fetcher = useFetcher<typeof action>()
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const [showSyncToast, setShowSyncToast] = useState(false)
+  const [showShareToast, setShowShareToast] = useState(false)
 
   const current = fetcher.data ?? data
   const { parent, isPayback, debt } = current
@@ -38,11 +53,45 @@ export default function Home() {
   const bgClass = isMamae ? "bg-mamae" : "bg-papai"
 
   useEffect(() => {
+    if (searchParams.has("sync")) {
+      setShowSyncToast(true)
+      navigate("/", { replace: true })
+      const timer = setTimeout(() => setShowSyncToast(false), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [searchParams, navigate])
+
+  useEffect(() => {
     document.body.classList.remove("mamae-day", "papai-day")
     document.body.classList.add(isMamae ? "mamae-day" : "papai-day")
 
     const themeColor = isMamae ? "#ffafcc" : "#a8e6cf"
     document.querySelector('meta[name="theme-color"]')?.setAttribute("content", themeColor)
+  }, [isMamae])
+
+  const handleShare = useCallback(async () => {
+    const syncUrl = getSyncUrl()
+    const shareData = {
+      title: "Dia de Quem?",
+      text: `Sincronizar o app do Kai: ${isMamae ? "Dia da Mamãe" : "Dia do Papai"}`,
+      url: syncUrl,
+    }
+
+    try {
+      if (navigator.share && navigator.canShare(shareData)) {
+        await navigator.share(shareData)
+      } else {
+        await navigator.clipboard.writeText(syncUrl)
+        setShowShareToast(true)
+        setTimeout(() => setShowShareToast(false), 2000)
+      }
+    } catch (err) {
+      if ((err as Error).name !== "AbortError") {
+        await navigator.clipboard.writeText(syncUrl)
+        setShowShareToast(true)
+        setTimeout(() => setShowShareToast(false), 2000)
+      }
+    }
   }, [isMamae])
 
   return (
@@ -65,15 +114,25 @@ export default function Home() {
           )}
         </div>
 
-        <fetcher.Form method="post">
+        <div className="button-group">
+          <fetcher.Form method="post">
+            <button
+              type="submit"
+              className="switch-button"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Trocando..." : "🔄 Trocar dia"}
+            </button>
+          </fetcher.Form>
+
           <button
-            type="submit"
-            className="switch-button"
-            disabled={isSubmitting}
+            type="button"
+            className="share-button"
+            onClick={handleShare}
           >
-            {isSubmitting ? "Trocando..." : "🔄 Trocar dia"}
+            📤 Compartilhar
           </button>
-        </fetcher.Form>
+        </div>
 
         {debt.owedTo && debt.amount > 0 && (
           <p className="hint">
@@ -89,6 +148,13 @@ export default function Home() {
         <span className="deco deco-4">🐢</span>
         <span className="deco deco-5">🍍</span>
       </div>
+
+      {showSyncToast && (
+        <div className="toast toast-sync">✅ Sincronizado!</div>
+      )}
+      {showShareToast && (
+        <div className="toast toast-share">📋 Link copiado!</div>
+      )}
     </div>
   )
 }
