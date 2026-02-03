@@ -14,17 +14,25 @@ const BASE_DATE = "2026-02-02"
 const BASE_PARENT: Parent = "mamae"
 
 function getDateString(date: Date = new Date()): string {
-  return date.toISOString().split("T")[0]
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
+}
+
+function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split("-").map(Number)
+  return new Date(year, month - 1, day)
 }
 
 function daysBetween(date1: string, date2: string): number {
-  const d1 = new Date(date1 + "T00:00:00")
-  const d2 = new Date(date2 + "T00:00:00")
-  return Math.floor((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24))
+  const d1 = parseLocalDate(date1)
+  const d2 = parseLocalDate(date2)
+  return Math.round((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24))
 }
 
 function addDays(dateStr: string, days: number): string {
-  const date = new Date(dateStr + "T00:00:00")
+  const date = parseLocalDate(dateStr)
   date.setDate(date.getDate() + days)
   return getDateString(date)
 }
