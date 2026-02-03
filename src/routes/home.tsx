@@ -1,53 +1,46 @@
 import { useEffect, useState, useCallback } from "react"
-import { useLoaderData, useFetcher, useSearchParams, useNavigate } from "react-router"
+import { useLoaderData, useFetcher } from "react-router"
 import {
-  getTodayParent,
+  fetchStateFromCloud,
   switchDay,
-  isPaybackDay,
-  getDebtInfo,
-  importState,
-  exportState,
+  subscribeToChanges,
+  getParentForState,
+  isPaybackDayForState,
+  getDebtInfoForState,
 } from "../lib/day-logic"
 
-export async function loader({ request }: { request: Request }) {
-  const url = new URL(request.url)
-  const syncParam = url.searchParams.get("sync")
+interface LoaderData {
+  parent: "mamae" | "papai"
+  isPayback: boolean
+  debt: { owedTo: "mamae" | "papai" | null; amount: number }
+}
 
-  if (syncParam) {
-    importState(syncParam)
-  }
-
+export async function loader(): Promise<LoaderData> {
+  const state = await fetchStateFromCloud()
   return {
-    parent: getTodayParent(),
-    isPayback: isPaybackDay(),
-    debt: getDebtInfo(),
-    didSync: !!syncParam,
+    parent: getParentForState(state),
+    isPayback: isPaybackDayForState(state),
+    debt: getDebtInfoForState(state),
   }
 }
 
-export async function action() {
-  switchDay()
+export async function action(): Promise<LoaderData> {
+  const result = await switchDay()
   return {
-    parent: getTodayParent(),
-    isPayback: isPaybackDay(),
-    debt: getDebtInfo(),
-    didSync: false,
+    parent: result.newParent,
+    isPayback: isPaybackDayForState(result.newState),
+    debt: getDebtInfoForState(result.newState),
   }
 }
 
 export default function Home() {
-  const data = useLoaderData<typeof loader>()
+  const initialData = useLoaderData<typeof loader>()
   const fetcher = useFetcher<typeof action>()
-  const [searchParams] = useSearchParams()
-  const navigate = useNavigate()
+  const [liveData, setLiveData] = useState<LoaderData | null>(null)
   const [showSyncToast, setShowSyncToast] = useState(false)
-  const [showCopyToast, setShowCopyToast] = useState(false)
-  const [showSyncModal, setShowSyncModal] = useState(false)
-  const [syncCode, setSyncCode] = useState("")
-  const [pasteCode, setPasteCode] = useState("")
 
-  const current = fetcher.data ?? data
-  const { parent, isPayback, debt } = current
+  const data = liveData ?? fetcher.data ?? initialData
+  const { parent, isPayback, debt } = data
   const isSubmitting = fetcher.state === "submitting"
 
   const isMamae = parent === "mamae"
@@ -56,13 +49,24 @@ export default function Home() {
   const bgClass = isMamae ? "bg-mamae" : "bg-papai"
 
   useEffect(() => {
-    if (searchParams.has("sync")) {
+    const unsubscribe = subscribeToChanges((newState) => {
+      setLiveData({
+        parent: getParentForState(newState),
+        isPayback: isPaybackDayForState(newState),
+        debt: getDebtInfoForState(newState),
+      })
       setShowSyncToast(true)
-      navigate("/", { replace: true })
-      const timer = setTimeout(() => setShowSyncToast(false), 3000)
-      return () => clearTimeout(timer)
+      setTimeout(() => setShowSyncToast(false), 3000)
+    })
+
+    return unsubscribe
+  }, [])
+
+  useEffect(() => {
+    if (fetcher.data) {
+      setLiveData(null)
     }
-  }, [searchParams, navigate])
+  }, [fetcher.data])
 
   useEffect(() => {
     document.body.classList.remove("mamae-day", "papai-day")
@@ -72,39 +76,13 @@ export default function Home() {
     document.querySelector('meta[name="theme-color"]')?.setAttribute("content", themeColor)
   }, [isMamae])
 
-  const openSyncModal = useCallback(() => {
-    setSyncCode(exportState())
-    setPasteCode("")
-    setShowSyncModal(true)
-  }, [])
-
-  const handleCopyCode = useCallback(async () => {
-    await navigator.clipboard.writeText(syncCode)
-    setShowCopyToast(true)
-    setTimeout(() => setShowCopyToast(false), 2000)
-  }, [syncCode])
-
-  const handlePasteSync = useCallback(() => {
-    if (pasteCode.trim()) {
-      const success = importState(pasteCode.trim())
-      if (success) {
-        setShowSyncModal(false)
-        setShowSyncToast(true)
-        setTimeout(() => setShowSyncToast(false), 3000)
-        navigate("/", { replace: true })
-      }
-    }
-  }, [pasteCode, navigate])
-
-  const handlePasteFromClipboard = useCallback(async () => {
-    try {
-      const text = await navigator.clipboard.readText()
-      if (text) {
-        setPasteCode(text)
-      }
-    } catch {
-      // Clipboard access denied
-    }
+  const handleRefresh = useCallback(async () => {
+    const state = await fetchStateFromCloud()
+    setLiveData({
+      parent: getParentForState(state),
+      isPayback: isPaybackDayForState(state),
+      debt: getDebtInfoForState(state),
+    })
   }, [])
 
   return (
@@ -141,9 +119,9 @@ export default function Home() {
           <button
             type="button"
             className="share-button"
-            onClick={openSyncModal}
+            onClick={handleRefresh}
           >
-            🔗 Sincronizar
+            🔄 Atualizar
           </button>
         </div>
 
@@ -162,57 +140,8 @@ export default function Home() {
         <span className="deco deco-5">🍍</span>
       </div>
 
-      {showSyncModal && (
-        <div className="modal-overlay" onClick={() => setShowSyncModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowSyncModal(false)}>✕</button>
-
-            <h3 className="modal-title">🔗 Sincronizar</h3>
-
-            <div className="sync-section">
-              <p className="sync-label">Seu código:</p>
-              <div className="code-box">
-                <code className="sync-code">{syncCode}</code>
-                <button className="copy-btn" onClick={handleCopyCode}>
-                  📋 Copiar
-                </button>
-              </div>
-              <p className="sync-hint">Envie este código para o outro celular</p>
-            </div>
-
-            <div className="sync-divider">ou</div>
-
-            <div className="sync-section">
-              <p className="sync-label">Colar código recebido:</p>
-              <div className="paste-box">
-                <input
-                  type="text"
-                  className="paste-input"
-                  value={pasteCode}
-                  onChange={(e) => setPasteCode(e.target.value)}
-                  placeholder="Cole o código aqui"
-                />
-                <button className="paste-btn" onClick={handlePasteFromClipboard}>
-                  📋
-                </button>
-              </div>
-              <button
-                className="apply-btn"
-                onClick={handlePasteSync}
-                disabled={!pasteCode.trim()}
-              >
-                ✅ Aplicar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {showSyncToast && (
-        <div className="toast toast-sync">✅ Sincronizado!</div>
-      )}
-      {showCopyToast && (
-        <div className="toast toast-share">📋 Código copiado!</div>
+        <div className="toast toast-sync">✅ Atualizado!</div>
       )}
     </div>
   )

@@ -1,3 +1,5 @@
+import { supabase } from "./supabase"
+
 type Parent = "mamae" | "papai"
 
 interface DayState {
@@ -6,6 +8,7 @@ interface DayState {
 }
 
 const STORAGE_KEY = "dia-de-quem-state"
+const SYNC_ID = "kai"
 const BASE_DATE = "2026-02-02"
 const BASE_PARENT: Parent = "mamae"
 const MAX_DEBT = 2
@@ -63,8 +66,71 @@ export function loadState(): DayState {
   return { switches: [], debt: 0 }
 }
 
-function saveState(state: DayState): void {
+function saveStateLocally(state: DayState): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+}
+
+export async function fetchStateFromCloud(): Promise<DayState> {
+  const { data, error } = await supabase
+    .from("sync_state")
+    .select("switches, debt")
+    .eq("id", SYNC_ID)
+    .single()
+
+  if (error || !data) {
+    console.error("Failed to fetch from Supabase:", error)
+    return loadState()
+  }
+
+  const state: DayState = {
+    switches: data.switches ?? [],
+    debt: data.debt ?? 0,
+  }
+
+  saveStateLocally(state)
+  return state
+}
+
+async function saveStateToCloud(state: DayState): Promise<void> {
+  const { error } = await supabase
+    .from("sync_state")
+    .upsert({
+      id: SYNC_ID,
+      switches: state.switches,
+      debt: state.debt,
+      updated_at: new Date().toISOString(),
+    })
+
+  if (error) {
+    console.error("Failed to save to Supabase:", error)
+  }
+}
+
+export function subscribeToChanges(onUpdate: (state: DayState) => void) {
+  const channel = supabase
+    .channel("sync_state_changes")
+    .on(
+      "postgres_changes",
+      {
+        event: "UPDATE",
+        schema: "public",
+        table: "sync_state",
+        filter: `id=eq.${SYNC_ID}`,
+      },
+      (payload) => {
+        const newState: DayState = {
+          switches: payload.new.switches ?? [],
+          debt: payload.new.debt ?? 0,
+        }
+        saveStateLocally(newState)
+        onUpdate(newState)
+      }
+    )
+    .subscribe()
+
+  return () => {
+    supabase.removeChannel(channel)
+  }
 }
 
 function getLastSwitchDate(switches: string[]): string | null {
@@ -83,8 +149,7 @@ function findPaybackStart(lastSwitch: string, owedParent: Parent): string {
   return checkDate
 }
 
-export function getParentForDate(dateStr: string = getDateString()): Parent {
-  const state = loadState()
+export function getParentForState(state: DayState, dateStr: string = getDateString()): Parent {
   const base = getBaseParentForDate(dateStr)
 
   if (state.switches.includes(dateStr)) {
@@ -111,11 +176,15 @@ export function getParentForDate(dateStr: string = getDateString()): Parent {
   return base
 }
 
+export function getParentForDate(dateStr: string = getDateString()): Parent {
+  return getParentForState(loadState(), dateStr)
+}
+
 export function getTodayParent(): Parent {
   return getParentForDate(getDateString())
 }
 
-export function switchDay(): { success: boolean; newParent: Parent } {
+export async function switchDay(): Promise<{ success: boolean; newParent: Parent; newState: DayState }> {
   const today = getDateString()
   const state = loadState()
   const baseParent = getBaseParentForDate(today)
@@ -141,12 +210,13 @@ export function switchDay(): { success: boolean; newParent: Parent } {
   const thirtyDaysAgo = addDays(today, -30)
   state.switches = state.switches.filter((d) => d >= thirtyDaysAgo)
 
-  saveState(state)
-  return { success: true, newParent: getTodayParent() }
+  saveStateLocally(state)
+  await saveStateToCloud(state)
+
+  return { success: true, newParent: getParentForState(state), newState: state }
 }
 
-export function isPaybackDay(): boolean {
-  const state = loadState()
+export function isPaybackDayForState(state: DayState): boolean {
   const today = getDateString()
 
   if (state.debt === 0) return false
@@ -162,8 +232,11 @@ export function isPaybackDay(): boolean {
   return daysIntoPayback >= 0 && daysIntoPayback < Math.abs(state.debt)
 }
 
-export function getDebtInfo(): { owedTo: Parent | null; amount: number } {
-  const state = loadState()
+export function isPaybackDay(): boolean {
+  return isPaybackDayForState(loadState())
+}
+
+export function getDebtInfoForState(state: DayState): { owedTo: Parent | null; amount: number } {
   if (state.debt === 0) return { owedTo: null, amount: 0 }
   return {
     owedTo: state.debt > 0 ? "papai" : "mamae",
@@ -171,28 +244,6 @@ export function getDebtInfo(): { owedTo: Parent | null; amount: number } {
   }
 }
 
-export function exportState(): string {
-  const state = loadState()
-  return btoa(JSON.stringify(state))
-}
-
-export function importState(encoded: string): boolean {
-  try {
-    const decoded = JSON.parse(atob(encoded))
-    if (typeof decoded.debt === "number" && Array.isArray(decoded.switches)) {
-      saveState({
-        switches: decoded.switches,
-        debt: clampDebt(decoded.debt),
-      })
-      return true
-    }
-  } catch {
-    // Invalid state
-  }
-  return false
-}
-
-export function getSyncUrl(): string {
-  const state = exportState()
-  return `${window.location.origin}${window.location.pathname}?sync=${state}`
+export function getDebtInfo(): { owedTo: Parent | null; amount: number } {
+  return getDebtInfoForState(loadState())
 }
