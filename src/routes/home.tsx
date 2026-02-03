@@ -2,25 +2,25 @@ import { useEffect } from "react"
 import { useLoaderData, useFetcher } from "react-router"
 import {
   getTodayParent,
-  canSwitchToday,
   switchDay,
   isPaybackDay,
+  getDebtInfo,
 } from "../lib/day-logic"
 
 export async function loader() {
   return {
     parent: getTodayParent(),
-    canSwitch: canSwitchToday(),
     isPayback: isPaybackDay(),
+    debt: getDebtInfo(),
   }
 }
 
 export async function action() {
-  const result = switchDay()
+  switchDay()
   return {
-    parent: result.newParent,
-    canSwitch: canSwitchToday(),
+    parent: getTodayParent(),
     isPayback: isPaybackDay(),
+    debt: getDebtInfo(),
   }
 }
 
@@ -29,7 +29,7 @@ export default function Home() {
   const fetcher = useFetcher<typeof action>()
 
   const current = fetcher.data ?? data
-  const { parent, canSwitch, isPayback } = current
+  const { parent, isPayback, debt } = current
   const isSubmitting = fetcher.state === "submitting"
 
   const isMamae = parent === "mamae"
@@ -69,21 +69,15 @@ export default function Home() {
           <button
             type="submit"
             className="switch-button"
-            disabled={!canSwitch || isSubmitting}
+            disabled={isSubmitting}
           >
-            {isSubmitting ? (
-              "Trocando..."
-            ) : canSwitch ? (
-              <>🔄 Trocar dia</>
-            ) : (
-              <>🚫 Não pode trocar hoje</>
-            )}
+            {isSubmitting ? "Trocando..." : "🔄 Trocar dia"}
           </button>
         </fetcher.Form>
 
-        {!canSwitch && (
+        {debt.owedTo && debt.amount > 0 && (
           <p className="hint">
-            Hoje é dia de troca, não dá pra trocar de novo!
+            {debt.owedTo === "papai" ? "Papai" : "Mamãe"} tem {debt.amount} {debt.amount === 1 ? "dia" : "dias"} guardado{debt.amount === 1 ? "" : "s"}
           </p>
         )}
       </main>

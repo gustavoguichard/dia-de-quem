@@ -1,17 +1,14 @@
 type Parent = "mamae" | "papai"
 
-interface SwitchEvent {
-  date: string
-  originalParent: Parent
-}
-
 interface DayState {
-  switches: SwitchEvent[]
+  switches: string[]
+  debt: number
 }
 
 const STORAGE_KEY = "dia-de-quem-state"
 const BASE_DATE = "2026-02-02"
 const BASE_PARENT: Parent = "mamae"
+const MAX_DEBT = 2
 
 function getDateString(date: Date = new Date()): string {
   const year = date.getFullYear()
@@ -39,80 +36,110 @@ function addDays(dateStr: string, days: number): string {
 
 function getBaseParentForDate(dateStr: string): Parent {
   const days = daysBetween(BASE_DATE, dateStr)
-  return days % 2 === 0 ? BASE_PARENT : (BASE_PARENT === "mamae" ? "papai" : "mamae")
+  return days % 2 === 0 ? BASE_PARENT : "papai"
 }
 
 function oppositeParent(parent: Parent): Parent {
   return parent === "mamae" ? "papai" : "mamae"
 }
 
+function clampDebt(debt: number): number {
+  return Math.max(-MAX_DEBT, Math.min(MAX_DEBT, debt))
+}
+
 export function loadState(): DayState {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored) {
-      return JSON.parse(stored)
+      const parsed = JSON.parse(stored)
+      return {
+        switches: parsed.switches ?? [],
+        debt: parsed.debt ?? 0,
+      }
     }
   } catch {
     // Ignore parse errors
   }
-  return { switches: [] }
+  return { switches: [], debt: 0 }
 }
 
 function saveState(state: DayState): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
 }
 
+function getLastSwitchDate(switches: string[]): string | null {
+  if (switches.length === 0) return null
+  return [...switches].sort().pop() ?? null
+}
+
+function findPaybackStart(lastSwitch: string, owedParent: Parent): string {
+  let checkDate = addDays(lastSwitch, 1)
+  for (let i = 0; i < 10; i++) {
+    if (getBaseParentForDate(checkDate) === owedParent) {
+      return checkDate
+    }
+    checkDate = addDays(checkDate, 1)
+  }
+  return checkDate
+}
+
 export function getParentForDate(dateStr: string = getDateString()): Parent {
   const state = loadState()
+  const base = getBaseParentForDate(dateStr)
 
-  for (const sw of state.switches) {
-    if (sw.date === dateStr) {
-      return oppositeParent(sw.originalParent)
-    }
-    if (addDays(sw.date, 1) === dateStr || addDays(sw.date, 2) === dateStr) {
-      return sw.originalParent
-    }
+  if (state.switches.includes(dateStr)) {
+    return oppositeParent(base)
   }
 
-  return getBaseParentForDate(dateStr)
+  if (state.debt === 0) {
+    return base
+  }
+
+  const lastSwitch = getLastSwitchDate(state.switches)
+  if (!lastSwitch || dateStr <= lastSwitch) {
+    return base
+  }
+
+  const owedParent: Parent = state.debt > 0 ? "papai" : "mamae"
+  const paybackStart = findPaybackStart(lastSwitch, owedParent)
+  const daysIntoPayback = daysBetween(paybackStart, dateStr)
+
+  if (daysIntoPayback >= 0 && daysIntoPayback < Math.abs(state.debt)) {
+    return owedParent
+  }
+
+  return base
 }
 
 export function getTodayParent(): Parent {
   return getParentForDate(getDateString())
 }
 
-export function canSwitchToday(): boolean {
-  const state = loadState()
+export function switchDay(): { success: boolean; newParent: Parent } {
   const today = getDateString()
+  const state = loadState()
+  const baseParent = getBaseParentForDate(today)
 
-  for (const sw of state.switches) {
-    if (addDays(sw.date, 1) === today || addDays(sw.date, 2) === today) {
-      return false
+  const isCurrentlySwitched = state.switches.includes(today)
+
+  if (isCurrentlySwitched) {
+    state.switches = state.switches.filter((d) => d !== today)
+    if (baseParent === "papai") {
+      state.debt = clampDebt(state.debt - 1)
+    } else {
+      state.debt = clampDebt(state.debt + 1)
+    }
+  } else {
+    state.switches.push(today)
+    if (baseParent === "papai") {
+      state.debt = clampDebt(state.debt + 1)
+    } else {
+      state.debt = clampDebt(state.debt - 1)
     }
   }
 
-  return true
-}
-
-export function switchDay(): { success: boolean; newParent: Parent } {
-  const today = getDateString()
-
-  if (!canSwitchToday()) {
-    return { success: false, newParent: getTodayParent() }
-  }
-
-  const state = loadState()
-  const originalParent = getBaseParentForDate(today)
-
-  const existingIndex = state.switches.findIndex(sw => sw.date === today)
-  if (existingIndex !== -1) {
-    state.switches.splice(existingIndex, 1)
-  } else {
-    state.switches.push({ date: today, originalParent })
-  }
-
   const thirtyDaysAgo = addDays(today, -30)
-  state.switches = state.switches.filter(sw => sw.date >= thirtyDaysAgo)
+  state.switches = state.switches.filter((d) => d >= thirtyDaysAgo)
 
   saveState(state)
   return { success: true, newParent: getTodayParent() }
@@ -122,11 +149,24 @@ export function isPaybackDay(): boolean {
   const state = loadState()
   const today = getDateString()
 
-  for (const sw of state.switches) {
-    if (addDays(sw.date, 1) === today || addDays(sw.date, 2) === today) {
-      return true
-    }
-  }
+  if (state.debt === 0) return false
+  if (state.switches.includes(today)) return false
 
-  return false
+  const lastSwitch = getLastSwitchDate(state.switches)
+  if (!lastSwitch || today <= lastSwitch) return false
+
+  const owedParent: Parent = state.debt > 0 ? "papai" : "mamae"
+  const paybackStart = findPaybackStart(lastSwitch, owedParent)
+  const daysIntoPayback = daysBetween(paybackStart, today)
+
+  return daysIntoPayback >= 0 && daysIntoPayback < Math.abs(state.debt)
+}
+
+export function getDebtInfo(): { owedTo: Parent | null; amount: number } {
+  const state = loadState()
+  if (state.debt === 0) return { owedTo: null, amount: 0 }
+  return {
+    owedTo: state.debt > 0 ? "papai" : "mamae",
+    amount: Math.abs(state.debt),
+  }
 }
