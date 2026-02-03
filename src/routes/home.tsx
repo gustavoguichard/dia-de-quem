@@ -6,7 +6,7 @@ import {
   isPaybackDay,
   getDebtInfo,
   importState,
-  getSyncUrl,
+  exportState,
 } from "../lib/day-logic"
 
 export async function loader({ request }: { request: Request }) {
@@ -41,7 +41,10 @@ export default function Home() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [showSyncToast, setShowSyncToast] = useState(false)
-  const [showShareToast, setShowShareToast] = useState(false)
+  const [showCopyToast, setShowCopyToast] = useState(false)
+  const [showSyncModal, setShowSyncModal] = useState(false)
+  const [syncCode, setSyncCode] = useState("")
+  const [pasteCode, setPasteCode] = useState("")
 
   const current = fetcher.data ?? data
   const { parent, isPayback, debt } = current
@@ -69,30 +72,40 @@ export default function Home() {
     document.querySelector('meta[name="theme-color"]')?.setAttribute("content", themeColor)
   }, [isMamae])
 
-  const handleShare = useCallback(async () => {
-    const syncUrl = getSyncUrl()
-    const shareData = {
-      title: "Dia de Quem? - Sincronizar",
-      text: `Abra para sincronizar: ${isMamae ? "Dia da Mamãe" : "Dia do Papai"} 🔗`,
-      url: syncUrl,
-    }
+  const openSyncModal = useCallback(() => {
+    setSyncCode(exportState())
+    setPasteCode("")
+    setShowSyncModal(true)
+  }, [])
 
-    try {
-      if (navigator.share && navigator.canShare(shareData)) {
-        await navigator.share(shareData)
-      } else {
-        await navigator.clipboard.writeText(syncUrl)
-        setShowShareToast(true)
-        setTimeout(() => setShowShareToast(false), 2000)
-      }
-    } catch (err) {
-      if ((err as Error).name !== "AbortError") {
-        await navigator.clipboard.writeText(syncUrl)
-        setShowShareToast(true)
-        setTimeout(() => setShowShareToast(false), 2000)
+  const handleCopyCode = useCallback(async () => {
+    await navigator.clipboard.writeText(syncCode)
+    setShowCopyToast(true)
+    setTimeout(() => setShowCopyToast(false), 2000)
+  }, [syncCode])
+
+  const handlePasteSync = useCallback(() => {
+    if (pasteCode.trim()) {
+      const success = importState(pasteCode.trim())
+      if (success) {
+        setShowSyncModal(false)
+        setShowSyncToast(true)
+        setTimeout(() => setShowSyncToast(false), 3000)
+        navigate("/", { replace: true })
       }
     }
-  }, [isMamae])
+  }, [pasteCode, navigate])
+
+  const handlePasteFromClipboard = useCallback(async () => {
+    try {
+      const text = await navigator.clipboard.readText()
+      if (text) {
+        setPasteCode(text)
+      }
+    } catch {
+      // Clipboard access denied
+    }
+  }, [])
 
   return (
     <div className={`container ${bgClass}`}>
@@ -128,7 +141,7 @@ export default function Home() {
           <button
             type="button"
             className="share-button"
-            onClick={handleShare}
+            onClick={openSyncModal}
           >
             🔗 Sincronizar
           </button>
@@ -149,11 +162,57 @@ export default function Home() {
         <span className="deco deco-5">🍍</span>
       </div>
 
+      {showSyncModal && (
+        <div className="modal-overlay" onClick={() => setShowSyncModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowSyncModal(false)}>✕</button>
+
+            <h3 className="modal-title">🔗 Sincronizar</h3>
+
+            <div className="sync-section">
+              <p className="sync-label">Seu código:</p>
+              <div className="code-box">
+                <code className="sync-code">{syncCode}</code>
+                <button className="copy-btn" onClick={handleCopyCode}>
+                  📋 Copiar
+                </button>
+              </div>
+              <p className="sync-hint">Envie este código para o outro celular</p>
+            </div>
+
+            <div className="sync-divider">ou</div>
+
+            <div className="sync-section">
+              <p className="sync-label">Colar código recebido:</p>
+              <div className="paste-box">
+                <input
+                  type="text"
+                  className="paste-input"
+                  value={pasteCode}
+                  onChange={(e) => setPasteCode(e.target.value)}
+                  placeholder="Cole o código aqui"
+                />
+                <button className="paste-btn" onClick={handlePasteFromClipboard}>
+                  📋
+                </button>
+              </div>
+              <button
+                className="apply-btn"
+                onClick={handlePasteSync}
+                disabled={!pasteCode.trim()}
+              >
+                ✅ Aplicar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showSyncToast && (
         <div className="toast toast-sync">✅ Sincronizado!</div>
       )}
-      {showShareToast && (
-        <div className="toast toast-share">📋 Link copiado!</div>
+      {showCopyToast && (
+        <div className="toast toast-share">📋 Código copiado!</div>
       )}
     </div>
   )
