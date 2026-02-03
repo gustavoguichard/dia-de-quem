@@ -28,6 +28,7 @@
 html, body, #root {
   height: 100%;
   width: 100%;
+  background: #a8e6cf;
 }
 
 body {
@@ -36,6 +37,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
   color: var(--text-dark);
+}
+
+body.mamae-day {
+  background: #ffafcc;
+}
+
+body.papai-day {
+  background: #a8e6cf;
 }
 
 .container {

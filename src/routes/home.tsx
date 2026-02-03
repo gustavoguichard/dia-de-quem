@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { useLoaderData, useFetcher } from "react-router"
 import {
   getTodayParent,
@@ -35,6 +36,14 @@ export default function Home() {
   const emoji = isMamae ? "🌺" : "🌴"
   const title = isMamae ? "Dia da Mamãe" : "Dia do Papai"
   const bgClass = isMamae ? "bg-mamae" : "bg-papai"
+
+  useEffect(() => {
+    document.body.classList.remove("mamae-day", "papai-day")
+    document.body.classList.add(isMamae ? "mamae-day" : "papai-day")
+
+    const themeColor = isMamae ? "#ffafcc" : "#a8e6cf"
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", themeColor)
+  }, [isMamae])
 
   return (
     <div className={`container ${bgClass}`}>
