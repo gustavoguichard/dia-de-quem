@@ -176,14 +176,6 @@ export function getParentForState(state: DayState, dateStr: string = getDateStri
   return base
 }
 
-export function getParentForDate(dateStr: string = getDateString()): Parent {
-  return getParentForState(loadState(), dateStr)
-}
-
-export function getTodayParent(): Parent {
-  return getParentForDate(getDateString())
-}
-
 export async function switchDay(): Promise<{ success: boolean; newParent: Parent; newState: DayState }> {
   const today = getDateString()
   const state = loadState()
@@ -232,10 +224,6 @@ export function isPaybackDayForState(state: DayState): boolean {
   return daysIntoPayback >= 0 && daysIntoPayback < Math.abs(state.debt)
 }
 
-export function isPaybackDay(): boolean {
-  return isPaybackDayForState(loadState())
-}
-
 export function getDebtInfoForState(state: DayState): { owedTo: Parent | null; amount: number } {
   if (state.debt === 0) return { owedTo: null, amount: 0 }
   return {
@@ -244,6 +232,3 @@ export function getDebtInfoForState(state: DayState): { owedTo: Parent | null; a
   }
 }
 
-export function getDebtInfo(): { owedTo: Parent | null; amount: number } {
-  return getDebtInfoForState(loadState())
-}
