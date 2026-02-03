@@ -44,7 +44,7 @@ export default function Home() {
 	const isSubmitting = fetcher.state === "submitting";
 
 	const isMamae = parent === "mamae";
-	const emoji = isMamae ? "🌺" : "🌴";
+	const emoji = isMamae ? "👩‍🌾🌺" : "🧑‍💻🍭";
 	const titlePrefix = isMamae ? "Hoje é dia da" : "Hoje é dia do";
 	const titleName = isMamae ? "Mamãe" : "Papai";
 	const bgClass = isMamae ? "bg-mamae" : "bg-papai";
@@ -89,14 +89,14 @@ export default function Home() {
 			</div>
 
 			<main className="content">
-        <h1 className="greeting">
-          <span className="greeting-text">Oi,</span>{" "}
-          <span className="greeting-name">Kai</span>
-          <span className="greeting-punct">!</span>{" "}
-          <span className="greeting-emoji" aria-hidden="true">
-            👋
-          </span>
-        </h1>
+				<h1 className="greeting">
+					<span className="greeting-text">Oi,</span>{" "}
+					<span className="greeting-name">Kai</span>
+					<span className="greeting-punct">!</span>{" "}
+					<span className="greeting-emoji" aria-hidden="true">
+						👋
+					</span>
+				</h1>
 
 				<div className="day-card">
 					<span className="emoji">{emoji}</span>
