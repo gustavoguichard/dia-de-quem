@@ -4,6 +4,10 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1;
 }
 
 :root {
@@ -37,6 +41,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
   color: var(--text-dark);
+  line-height: 1.5;
+  font-size: clamp(16px, 2.5vw, 18px);
 }
 
 body.mamae-day {
@@ -221,9 +227,10 @@ body.papai-day {
 }
 
 .greeting {
-  font-size: 1.9rem;
+  font-size: clamp(1.5rem, 5vw, 1.9rem);
   font-weight: 700;
   letter-spacing: -0.02em;
+  line-height: 1.2;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -237,27 +244,30 @@ body.papai-day {
   border: 1px solid rgba(255, 255, 255, 0.7);
   animation: bounce 3s ease-in-out infinite;
   text-transform: none;
+  text-wrap: balance;
 }
 
 .greeting-text,
 .greeting-punct {
   font-weight: 700;
   color: #1f2a33;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+  letter-spacing: -0.01em;
 }
 
 .greeting-name {
   font-family: "Fraunces", "Manrope", sans-serif;
   font-weight: 800;
+  font-variation-settings: "opsz" 72;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  font-size: 1.08em;
+  letter-spacing: 0.05em;
+  font-size: 1.1em;
   background: linear-gradient(120deg, var(--mamae-primary), var(--papai-primary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   position: relative;
-  text-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.15));
 }
 
 .greeting-name::after {
@@ -293,8 +303,9 @@ body.papai-day {
 .day-card {
   background: var(--glass-strong);
   border-radius: 30px;
-  padding: 40px 50px;
+  padding: 50px;
   box-shadow: var(--shadow-lg);
+  min-width: 18em;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -326,8 +337,9 @@ body.papai-day {
 }
 
 .emoji {
-  font-size: 5rem;
+  font-size: clamp(4rem, 15vw, 5rem);
   animation: wiggle 2s ease-in-out infinite;
+  line-height: 1;
 }
 
 @keyframes wiggle {
@@ -337,37 +349,49 @@ body.papai-day {
 
 .title {
   font-family: "Fraunces", "Manrope", sans-serif;
-  font-size: 2.5rem;
+  font-size: clamp(2rem, 7vw, 2.5rem);
   font-weight: 800;
-  letter-spacing: -0.02em;
+  font-variation-settings: "opsz" 144;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
   text-transform: uppercase;
+  text-wrap: balance;
 }
 
 .title-prefix {
-  font-weight: 600;
-  color: rgba(31, 42, 51, 0.75);
-  letter-spacing: 0.02em;
+  display: block;
+  font-family: "Manrope", sans-serif;
+  font-size: 0.55em;
+  font-weight: 700;
+  color: rgba(31, 42, 51, 0.85);
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+  text-transform: uppercase;
 }
 
 .title-highlight {
   position: relative;
   display: inline-block;
-  padding: 2px 10px 4px;
+  padding: 4px 14px 6px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.7);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+  font-variation-settings: "opsz" 144;
+  letter-spacing: 0.02em;
 }
 
 .bg-mamae .title-highlight {
   color: var(--mamae-accent);
-  background: linear-gradient(135deg, rgba(255, 107, 157, 0.2), rgba(255, 195, 210, 0.5));
-  border: 1px solid rgba(255, 107, 157, 0.35);
+  background: linear-gradient(135deg, rgba(255, 107, 157, 0.25), rgba(255, 195, 210, 0.55));
+  border: 1px solid rgba(255, 107, 157, 0.4);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .bg-papai .title-highlight {
   color: var(--papai-accent);
-  background: linear-gradient(135deg, rgba(78, 205, 196, 0.2), rgba(168, 230, 207, 0.6));
-  border: 1px solid rgba(78, 205, 196, 0.35);
+  background: linear-gradient(135deg, rgba(78, 205, 196, 0.25), rgba(168, 230, 207, 0.65));
+  border: 1px solid rgba(78, 205, 196, 0.4);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .payback-badge {
@@ -375,9 +399,12 @@ body.papai-day {
   color: var(--text-dark);
   padding: 8px 16px;
   border-radius: 20px;
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 3vw, 0.9rem);
   font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.3;
   animation: pulse 1.5s ease-in-out infinite;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .switch-button {
@@ -385,14 +412,17 @@ body.papai-day {
   color: white;
   border: none;
   padding: 18px 36px;
-  font-size: 1.3rem;
+  font-size: clamp(1.1rem, 4vw, 1.3rem);
   font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
   border-radius: 50px;
   cursor: pointer;
   box-shadow: var(--shadow);
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .bg-mamae .switch-button {
@@ -469,13 +499,15 @@ body.papai-day {
 
 .hint {
   color: var(--text-dark);
-  font-size: 0.95rem;
-  opacity: 0.8;
+  font-size: clamp(0.85rem, 3vw, 0.95rem);
+  font-weight: 500;
+  line-height: 1.4;
   max-width: 280px;
   background: var(--glass);
   padding: 12px 20px;
   border-radius: 15px;
   backdrop-filter: blur(5px);
+  text-wrap: balance;
 }
 
 .toast {
@@ -488,6 +520,8 @@ body.papai-day {
   padding: 14px 28px;
   border-radius: 50px;
   font-weight: 600;
+  font-size: clamp(0.9rem, 3vw, 1rem);
+  letter-spacing: 0.01em;
   box-shadow: var(--shadow-lg);
   z-index: 100;
   animation: toastIn 0.3s ease-out;
@@ -533,8 +567,8 @@ body.papai-day {
 /* Mobile optimizations */
 @media (max-width: 480px) {
   .greeting {
-    font-size: 1.5rem;
     padding: 8px 14px;
+    gap: 8px;
   }
 
   .day-card {
@@ -543,16 +577,11 @@ body.papai-day {
   }
 
   .emoji {
-    font-size: 4rem;
-  }
-
-  .title {
-    font-size: 2.1rem;
+    font-size: clamp(3rem, 12vw, 4rem);
   }
 
   .switch-button {
     padding: 16px 32px;
-    font-size: 1.1rem;
   }
 
   .deco {
