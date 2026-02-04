@@ -7,7 +7,9 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  font-feature-settings: "kern" 1, "liga" 1;
+  font-feature-settings:
+    "kern" 1,
+    "liga" 1;
 }
 
 :root {
@@ -29,7 +31,9 @@
   --glass-strong: rgba(255, 255, 255, 0.95);
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   width: 100%;
   background: #a8e6cf;
@@ -71,9 +75,21 @@ body.papai-day {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.35), transparent 45%),
-    radial-gradient(circle at 85% 30%, rgba(255, 255, 255, 0.28), transparent 40%),
-    radial-gradient(circle at 50% 85%, rgba(255, 255, 255, 0.22), transparent 55%);
+    radial-gradient(
+      circle at 15% 20%,
+      rgba(255, 255, 255, 0.35),
+      transparent 45%
+    ),
+    radial-gradient(
+      circle at 85% 30%,
+      rgba(255, 255, 255, 0.28),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 50% 85%,
+      rgba(255, 255, 255, 0.22),
+      transparent 55%
+    );
   opacity: 0.8;
   pointer-events: none;
 }
@@ -85,7 +101,9 @@ body.papai-day {
   background:
     radial-gradient(circle, rgba(255, 255, 255, 0.2) 0 1px, transparent 1px),
     radial-gradient(circle, rgba(0, 0, 0, 0.06) 0 1px, transparent 1px);
-  background-size: 22px 22px, 28px 28px;
+  background-size:
+    22px 22px,
+    28px 28px;
   opacity: 0.18;
   pointer-events: none;
   mix-blend-mode: soft-light;
@@ -113,8 +131,15 @@ body.papai-day {
 }
 
 @keyframes pulse {
-  0%, 100% { transform: scale(1); opacity: 0.9; }
-  50% { transform: scale(1.1); opacity: 1; }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
 }
 
 /* Clouds */
@@ -135,7 +160,7 @@ body.papai-day {
 
 .cloud::before,
 .cloud::after {
-  content: '';
+  content: "";
   position: absolute;
   background: inherit;
   border-radius: 50%;
@@ -210,8 +235,12 @@ body.papai-day {
 }
 
 @keyframes float {
-  from { transform: translateX(0); }
-  to { transform: translateX(calc(100vw + 200px)); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(100vw + 200px));
+  }
 }
 
 /* Main content */
@@ -262,7 +291,11 @@ body.papai-day {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-size: 1.1em;
-  background: linear-gradient(120deg, var(--mamae-primary), var(--papai-primary));
+  background: linear-gradient(
+    120deg,
+    var(--mamae-primary),
+    var(--papai-primary)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -278,7 +311,11 @@ body.papai-day {
   bottom: -4px;
   height: 6px;
   border-radius: 999px;
-  background: linear-gradient(120deg, rgba(255, 107, 157, 0.35), rgba(78, 205, 196, 0.35));
+  background: linear-gradient(
+    120deg,
+    rgba(255, 107, 157, 0.35),
+    rgba(78, 205, 196, 0.35)
+  );
   z-index: -1;
 }
 
@@ -289,15 +326,29 @@ body.papai-day {
 }
 
 @keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
 
 @keyframes wave {
-  0%, 100% { transform: rotate(0deg); }
-  20% { transform: rotate(12deg); }
-  40% { transform: rotate(-8deg); }
-  60% { transform: rotate(10deg); }
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(12deg);
+  }
+  40% {
+    transform: rotate(-8deg);
+  }
+  60% {
+    transform: rotate(10deg);
+  }
 }
 
 .day-card {
@@ -343,8 +394,13 @@ body.papai-day {
 }
 
 @keyframes wiggle {
-  0%, 100% { transform: rotate(-5deg); }
-  50% { transform: rotate(5deg); }
+  0%,
+  100% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
 }
 
 .title {
@@ -382,14 +438,22 @@ body.papai-day {
 
 .bg-mamae .title-highlight {
   color: var(--mamae-accent);
-  background: linear-gradient(135deg, rgba(255, 107, 157, 0.25), rgba(255, 195, 210, 0.55));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 107, 157, 0.25),
+    rgba(255, 195, 210, 0.55)
+  );
   border: 1px solid rgba(255, 107, 157, 0.4);
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .bg-papai .title-highlight {
   color: var(--papai-accent);
-  background: linear-gradient(135deg, rgba(78, 205, 196, 0.25), rgba(168, 230, 207, 0.65));
+  background: linear-gradient(
+    135deg,
+    rgba(78, 205, 196, 0.25),
+    rgba(168, 230, 207, 0.65)
+  );
   border: 1px solid rgba(78, 205, 196, 0.4);
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
 }
@@ -454,13 +518,18 @@ body.papai-day {
 }
 
 .switch-button::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
   transition: left 0.5s;
 }
 
@@ -553,15 +622,40 @@ body.papai-day {
   animation: floatDeco 6s ease-in-out infinite;
 }
 
-.deco-1 { bottom: 15%; left: 8%; animation-delay: 0s; }
-.deco-2 { bottom: 25%; right: 10%; animation-delay: 1s; }
-.deco-3 { bottom: 5%; left: 50%; animation-delay: 2s; }
-.deco-4 { bottom: 30%; left: 5%; animation-delay: 3s; }
-.deco-5 { bottom: 10%; right: 15%; animation-delay: 4s; }
+.deco-1 {
+  bottom: 15%;
+  left: 8%;
+  animation-delay: 0s;
+}
+.deco-2 {
+  bottom: 25%;
+  right: 10%;
+  animation-delay: 1s;
+}
+.deco-3 {
+  bottom: 5%;
+  left: 50%;
+  animation-delay: 2s;
+}
+.deco-4 {
+  bottom: 30%;
+  left: 5%;
+  animation-delay: 3s;
+}
+.deco-5 {
+  bottom: 10%;
+  right: 15%;
+  animation-delay: 4s;
+}
 
 @keyframes floatDeco {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-15px) rotate(10deg); }
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-15px) rotate(10deg);
+  }
 }
 
 /* Mobile optimizations */
