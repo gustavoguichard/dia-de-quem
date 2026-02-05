@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useFetcher, useLoaderData } from "react-router";
+import { useEffect, useState } from 'react'
+import { useFetcher, useLoaderData } from 'react-router'
 import {
   fetchStateFromCloud,
   getDebtInfoForState,
@@ -7,47 +7,47 @@ import {
   isPaybackDayForState,
   subscribeToChanges,
   switchDay,
-} from "../lib/day-logic";
+} from '../lib/day-logic'
 
 interface LoaderData {
-  parent: "mamae" | "papai";
-  isPayback: boolean;
-  debt: { owedTo: "mamae" | "papai" | null; amount: number };
+  parent: 'mamae' | 'papai'
+  isPayback: boolean
+  debt: { owedTo: 'mamae' | 'papai' | null; amount: number }
 }
 
 export async function loader(): Promise<LoaderData> {
-  const state = await fetchStateFromCloud();
+  const state = await fetchStateFromCloud()
   return {
     parent: getParentForState(state),
     isPayback: isPaybackDayForState(state),
     debt: getDebtInfoForState(state),
-  };
+  }
 }
 
 export async function action(): Promise<LoaderData> {
-  const result = await switchDay();
+  const result = await switchDay()
   return {
     parent: result.newParent,
     isPayback: isPaybackDayForState(result.newState),
     debt: getDebtInfoForState(result.newState),
-  };
+  }
 }
 
 export default function Home() {
-  const initialData = useLoaderData<typeof loader>();
-  const fetcher = useFetcher<typeof action>();
-  const [liveData, setLiveData] = useState<LoaderData | null>(null);
-  const [showSyncToast, setShowSyncToast] = useState(false);
+  const initialData = useLoaderData<typeof loader>()
+  const fetcher = useFetcher<typeof action>()
+  const [liveData, setLiveData] = useState<LoaderData | null>(null)
+  const [showSyncToast, setShowSyncToast] = useState(false)
 
-  const data = liveData ?? fetcher.data ?? initialData;
-  const { parent, isPayback, debt } = data;
-  const isSubmitting = fetcher.state === "submitting";
+  const data = liveData ?? fetcher.data ?? initialData
+  const { parent, isPayback, debt } = data
+  const isSubmitting = fetcher.state === 'submitting'
 
-  const isMamae = parent === "mamae";
-  const emoji = isMamae ? "👩‍🌾🌺" : "🧑‍💻🍭";
-  const titlePrefix = isMamae ? "Hoje é dia da" : "Hoje é dia do";
-  const titleName = isMamae ? "Mamãe" : "Papai";
-  const bgClass = isMamae ? "bg-mamae" : "bg-papai";
+  const isMamae = parent === 'mamae'
+  const emoji = isMamae ? '👩‍🌾🌺' : '🧑‍💻🍭'
+  const titlePrefix = isMamae ? 'Hoje é dia da' : 'Hoje é dia do'
+  const titleName = isMamae ? 'Mamãe' : 'Papai'
+  const bgClass = isMamae ? 'bg-mamae' : 'bg-papai'
 
   useEffect(() => {
     const unsubscribe = subscribeToChanges((newState) => {
@@ -55,88 +55,88 @@ export default function Home() {
         parent: getParentForState(newState),
         isPayback: isPaybackDayForState(newState),
         debt: getDebtInfoForState(newState),
-      });
-      setShowSyncToast(true);
-      setTimeout(() => setShowSyncToast(false), 3000);
-    });
+      })
+      setShowSyncToast(true)
+      setTimeout(() => setShowSyncToast(false), 3000)
+    })
 
-    return unsubscribe;
-  }, []);
+    return unsubscribe
+  }, [])
 
   useEffect(() => {
     if (fetcher.data) {
-      setLiveData(null);
+      setLiveData(null)
     }
-  }, [fetcher.data]);
+  }, [fetcher.data])
 
   useEffect(() => {
-    document.body.classList.remove("mamae-day", "papai-day");
-    document.body.classList.add(isMamae ? "mamae-day" : "papai-day");
+    document.body.classList.remove('mamae-day', 'papai-day')
+    document.body.classList.add(isMamae ? 'mamae-day' : 'papai-day')
 
-    const themeColor = isMamae ? "#ffafcc" : "#a8e6cf";
+    const themeColor = isMamae ? '#ffafcc' : '#a8e6cf'
     document
       .querySelector('meta[name="theme-color"]')
-      ?.setAttribute("content", themeColor);
-  }, [isMamae]);
+      ?.setAttribute('content', themeColor)
+  }, [isMamae])
 
   return (
     <div className={`container ${bgClass}`}>
-      <div className="sun" />
-      <div className="clouds">
-        <div className="cloud cloud-1" />
-        <div className="cloud cloud-2" />
-        <div className="cloud cloud-3" />
+      <div className='sun' />
+      <div className='clouds'>
+        <div className='cloud cloud-1' />
+        <div className='cloud cloud-2' />
+        <div className='cloud cloud-3' />
       </div>
 
-      <main className="content">
-        <h1 className="greeting">
-          <span className="greeting-text">Oi,</span>{" "}
-          <span className="greeting-name">Kai</span>
-          <span className="greeting-punct">!</span>{" "}
-          <span className="greeting-emoji" aria-hidden="true">
+      <main className='content'>
+        <h1 className='greeting'>
+          <span className='greeting-text'>Oi,</span>{' '}
+          <span className='greeting-name'>Kai</span>
+          <span className='greeting-punct'>!</span>{' '}
+          <span className='greeting-emoji' aria-hidden='true'>
             👋
           </span>
         </h1>
 
-        <div className="day-card">
-          <span className="emoji">{emoji}</span>
-          <h2 className="title">
-            <span className="title-prefix">{titlePrefix}</span>{" "}
-            <span className="title-highlight">{titleName}</span>
+        <div className='day-card'>
+          <span className='emoji'>{emoji}</span>
+          <h2 className='title'>
+            <span className='title-prefix'>{titlePrefix}</span>{' '}
+            <span className='title-highlight'>{titleName}</span>
           </h2>
-          {isPayback && <p className="payback-badge">🔄 Dia de troca!</p>}
+          {isPayback && <p className='payback-badge'>🔄 Dia de troca!</p>}
         </div>
 
-        <div className="button-group">
-          <fetcher.Form method="post">
+        <div className='button-group'>
+          <fetcher.Form method='post'>
             <button
-              type="submit"
-              className="switch-button"
+              type='submit'
+              className='switch-button'
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Trocando..." : "🔄 Trocar dia"}
+              {isSubmitting ? 'Trocando...' : '🔄 Trocar dia'}
             </button>
           </fetcher.Form>
         </div>
 
         {debt.owedTo && debt.amount > 0 && (
-          <p className="hint">
-            {debt.owedTo === "papai" ? "Papai" : "Mamãe"} tem {debt.amount}{" "}
-            {debt.amount === 1 ? "dia" : "dias"} guardado
-            {debt.amount === 1 ? "" : "s"}
+          <p className='hint'>
+            {debt.owedTo === 'papai' ? 'Papai' : 'Mamãe'} tem {debt.amount}{' '}
+            {debt.amount === 1 ? 'dia' : 'dias'} guardado
+            {debt.amount === 1 ? '' : 's'}
           </p>
         )}
       </main>
 
-      <div className="decorations">
-        <span className="deco deco-1">🦜</span>
-        <span className="deco deco-2">🥥</span>
-        <span className="deco deco-3">🌊</span>
-        <span className="deco deco-4">🐢</span>
-        <span className="deco deco-5">🍍</span>
+      <div className='decorations'>
+        <span className='deco deco-1'>🦜</span>
+        <span className='deco deco-2'>🥥</span>
+        <span className='deco deco-3'>🌊</span>
+        <span className='deco deco-4'>🐢</span>
+        <span className='deco deco-5'>🍍</span>
       </div>
 
-      {showSyncToast && <div className="toast toast-sync">✅ Atualizado!</div>}
+      {showSyncToast && <div className='toast toast-sync'>✅ Atualizado!</div>}
     </div>
-  );
+  )
 }

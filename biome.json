@@ -21,9 +21,9 @@
   "javascript": {
     "formatter": {
       "enabled": true,
-      "jsxQuoteStyle": "double",
-      "quoteStyle": "double",
-      "semicolons": "always",
+      "jsxQuoteStyle": "single",
+      "quoteStyle": "single",
+      "semicolons": "asNeeded",
       "trailingCommas": "all"
     },
     "linter": {

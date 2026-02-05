@@ -1,6 +1,6 @@
-import sharp from "sharp";
+import sharp from 'sharp'
 
-const sizes = [192, 512];
+const sizes = [192, 512]
 
 const svg = `
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
@@ -51,16 +51,16 @@ const svg = `
   <path d="M 0 450 Q 80 420 160 450 Q 240 480 320 450 Q 400 420 512 450 L 512 512 L 0 512 Z"
         fill="rgba(255,255,255,0.3)"/>
 </svg>
-`;
+`
 
 async function generateIcons() {
   for (const size of sizes) {
     await sharp(Buffer.from(svg))
       .resize(size, size)
       .png()
-      .toFile(`public/icons/icon-${size}.png`);
-    console.log(`Generated icon-${size}.png`);
+      .toFile(`public/icons/icon-${size}.png`)
+    console.log(`Generated icon-${size}.png`)
   }
 }
 
-generateIcons().catch(console.error);
+generateIcons().catch(console.error)
